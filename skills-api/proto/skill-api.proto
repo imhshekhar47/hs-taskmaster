@@ -1,0 +1,116 @@
+syntax = "proto3";
+
+option go_package="./pb";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+import "google/api/annotations.proto";
+import "gorm/options/gorm.proto";
+
+enum HealthStatus {
+    UNKNOWN = 0;
+    UP = 1;
+    DOWN = 2;
+}
+
+message Health {
+    google.protobuf.Timestamp timestamp = 1;
+    HealthStatus status = 2;
+}
+
+message PageableResult {
+    int32 records = 1; 
+    int32 index = 2;
+    int32 limit = 3;
+}
+
+message PageRequest {
+    int32 index = 1;
+    int32 limit = 2;
+}
+
+
+message Skill {
+    option (gorm.opts).ormable = true;
+
+    string id = 1;
+    string name = 2;
+}
+
+message SkillRef {
+    option (gorm.opts).ormable = true;
+
+    string id = 1;
+    string name = 2;
+    string href = 3;
+}
+
+message SkillQueryResponse {
+    PageableResult range = 1;
+    repeated Skill items = 2 ;
+}
+
+message SkillAddRequest {
+    string name = 1;
+}
+
+message SkillRequest {
+    string id = 1;
+}
+
+message SkillQuery {
+    int32 offset = 1;
+    int32 index = 2;
+    int32 limit = 3;
+
+    string name = 4;
+}
+
+service SkillService {
+
+    rpc Healthcheck(google.protobuf.Empty) returns(Health) {
+        option (google.api.http) = {
+            get: "/health"
+        };
+    };
+
+    rpc List(PageRequest) returns (SkillQueryResponse) {
+        option (google.api.http) = {
+            get: "/skill"
+        };
+    };
+
+    rpc Add(SkillAddRequest) returns (Skill) {
+        option (google.api.http) = {
+            post: "/skill"
+            body: "*"
+        };
+    };
+
+    rpc Get(SkillRequest) returns (Skill) {
+        option (google.api.http) = {
+            get: "/skill/{id}"
+        };
+    };
+
+
+    rpc Patch(Skill) returns (Skill) {
+        option (google.api.http) = {
+            patch: "/skill/{id}"
+            body: "*"
+        };
+    }; 
+    
+    rpc Remove(SkillRequest) returns (Skill) {
+        option (google.api.http) = {
+            delete: "/skill/{id}"
+        };
+    };
+    
+    rpc Search(SkillQuery) returns (SkillQueryResponse) {
+        option (google.api.http) = {
+            get: "/skill/search"
+        };
+    };
+
+}
